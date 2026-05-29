@@ -11,6 +11,7 @@ An [MCP](https://modelcontextprotocol.io/) server that exposes iTerm2 tab contro
 | `iterm_ping` | Sanity check that the server is reachable |
 | `tabs_list` | Enumerate iTerm tabs with runtime detection (claude / codex / ssh / shell) and resume-UUID extraction |
 | `tabs_peek` | Read tab contents, optionally tail-limited to last N lines |
+| `tabs_search` | Search recent tab contents for substring or regex matches with line numbers |
 | `tabs_dispatch` | Write text into a tab with 3-tier submit escalation (CR+LF → keystroke → file-drop) |
 | `tabs_focus` | Bring a tab to the foreground |
 | `tabs_send_keystroke` | Send a raw `return` / `tab` / `escape` / `backspace` / `space` keystroke via Accessibility |

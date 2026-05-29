@@ -4,6 +4,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { listTabs } from './tabs/list.js';
 import { peekTab } from './tabs/peek.js';
+import { searchTab } from './tabs/search.js';
 import { dispatchToTab } from './tabs/dispatch.js';
 import { focusTab } from './tabs/focus.js';
 import { sendKeystroke, KeystrokeKey } from './tabs/keystroke.js';
@@ -57,6 +58,24 @@ reg(
   },
   async ({ window, tab, tailLines }: { window: number; tab: number; tailLines?: number }) => {
     const result = await peekTab(window, tab, tailLines);
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  },
+);
+
+reg(
+  'tabs_search',
+  {
+    description: 'Search recent iTerm tab contents for a substring or regex pattern',
+    inputSchema: {
+      window: z.number().int().positive().describe('iTerm window index (1-based)'),
+      tab: z.number().int().positive().describe('iTerm tab index (1-based)'),
+      pattern: z.string().describe('Substring or regex pattern to search for'),
+      regex: z.boolean().optional().describe('If true, treat pattern as a JavaScript regular expression'),
+      tailLines: z.number().int().positive().optional().describe('If set, search only the last N lines'),
+    },
+  },
+  async ({ window, tab, pattern, regex, tailLines }: { window: number; tab: number; pattern: string; regex?: boolean; tailLines?: number }) => {
+    const result = await searchTab({ window, tab, pattern, regex, tailLines });
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   },
 );
