@@ -13,7 +13,11 @@ const server = new McpServer({
   version: '0.1.0',
 });
 
-// Cast around SDK 1.29's deep generic inference (TS2589) — runtime behavior is identical.
+// `registerTool` in @modelcontextprotocol/sdk ^1.29 has extremely deep generic inference
+// over Zod schemas. Combined with zod ^3.25, tsc hits TS2589 ("type instantiation is
+// excessively deep and possibly infinite") and refuses to compile. This wrapper erases
+// the SDK's generics at the call site — runtime behavior is identical, only the
+// compile-time check is short-circuited. Retire when the SDK ships shallower overloads.
 const reg: (name: string, config: any, cb: any) => void = (n, c, h) => {
   (server as any).registerTool(n, c, h);
 };
