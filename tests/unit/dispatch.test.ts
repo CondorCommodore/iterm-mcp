@@ -57,6 +57,21 @@ describe('dispatchToTab', () => {
     expect(script).not.toContain('character id 13');
   });
 
+  it('escalation: "crlf" reports the tier 1 error without falling back', async () => {
+    runOsascript.mockResolvedValueOnce(fail('tab missing'));
+
+    const r = await dispatchToTab({
+      window: 1,
+      tab: 9,
+      text: 'hi',
+      submit: true,
+      escalation: 'crlf',
+    });
+
+    expect(r).toEqual({ dispatched: false, tierUsed: 'crlf', reason: 'tab missing' });
+    expect(runOsascript).toHaveBeenCalledTimes(1);
+  });
+
   it('escapes backslashes and double-quotes in the payload', async () => {
     runOsascript.mockResolvedValueOnce(ok);
     await dispatchToTab({ window: 1, tab: 1, text: 'a"b\\c', submit: false });
@@ -119,6 +134,25 @@ describe('dispatchToTab', () => {
     });
     expect(r.tierUsed).toBe('keystroke');
     expect(runOsascript).toHaveBeenCalledTimes(2);
+  });
+
+  it('tier 2 sends only the focus/return script when text is empty', async () => {
+    runOsascript.mockResolvedValueOnce(ok);
+
+    const r = await dispatchToTab({
+      window: 8,
+      tab: 4,
+      text: '',
+      submit: true,
+      escalation: 'keystroke',
+    });
+
+    expect(r).toEqual({ dispatched: true, tierUsed: 'keystroke' });
+    expect(runOsascript).toHaveBeenCalledTimes(1);
+    const script = runOsascript.mock.calls[0][0] as string;
+    expect(script).toContain('tell window 8 to select tab 4');
+    expect(script).toContain('keystroke return');
+    expect(script).not.toContain('write text');
   });
 
   it('refuses self-dispatch when target window/tab matches conductor marker', async () => {

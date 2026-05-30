@@ -16,6 +16,43 @@ An [MCP](https://modelcontextprotocol.io/) server that exposes iTerm2 tab contro
 | `tabs_focus` | Bring a tab to the foreground |
 | `tabs_send_keystroke` | Send a raw `return` / `tab` / `escape` / `backspace` / `space` keystroke via Accessibility |
 
+## Usage
+
+After registering the server with Claude, use the tab tools from a conductor session:
+
+```json
+{ "tool": "tabs_list", "arguments": {} }
+```
+
+Peek at a specific tab:
+
+```json
+{ "tool": "tabs_peek", "arguments": { "window": 1, "tab": 2, "tailLines": 40 } }
+```
+
+Search recent output:
+
+```json
+{ "tool": "tabs_search", "arguments": { "window": 1, "tab": 2, "pattern": "BLOCKED|PR URL", "regex": true, "tailLines": 200 } }
+```
+
+Dispatch work to a sibling tab:
+
+```json
+{
+  "tool": "tabs_dispatch",
+  "arguments": {
+    "window": 1,
+    "tab": 3,
+    "text": "Please run npm test and report failures.",
+    "submit": true,
+    "escalation": "auto"
+  }
+}
+```
+
+For recovery-only dispatches, force `escalation: "fallback"` to create a pending dispatch markdown file without sending keystrokes.
+
 ## Three-tier dispatch escalation
 
 `tabs_dispatch` is the workhorse. Submitting text reliably across local-shell, claude, codex, and SSH-into-remote tabs needs different mechanisms, so the tool escalates:
