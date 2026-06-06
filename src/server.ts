@@ -53,7 +53,7 @@ reg(
     inputSchema: {
       window: z.number().int().positive().describe('iTerm window index (1-based)'),
       tab: z.number().int().positive().describe('iTerm tab index (1-based)'),
-      tailLines: z.number().int().positive().optional().describe('If set, return only the last N lines'),
+      tailLines: z.number().int().positive().optional().default(45).describe('Return only the last N lines. Defaults to ~45 lines (one page); a smaller tail can clip the Working/✻ indicator that sits above the input box and make a running tab look idle.'),
     },
   },
   async ({ window, tab, tailLines }: { window: number; tab: number; tailLines?: number }) => {
