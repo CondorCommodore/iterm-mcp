@@ -6,7 +6,7 @@ vi.mock('../../src/applescript.js', () => ({
   runShell: vi.fn(),
 }));
 
-import { peekTab } from '../../src/tabs/peek.js';
+import { peekInputRegion, peekTab } from '../../src/tabs/peek.js';
 
 beforeEach(() => runOsascript.mockReset());
 
@@ -42,5 +42,19 @@ describe('peekTab', () => {
   it('returns empty result when AppleScript errors', async () => {
     runOsascript.mockResolvedValueOnce({ stdout: '', stderr: 'x', code: 1, timedOut: false });
     expect(await peekTab(1, 1)).toEqual({ contents: '', lineCount: 0 });
+  });
+
+  it('peekInputRegion returns the last paragraph for prompt-area reads', async () => {
+    runOsascript.mockResolvedValueOnce({
+      stdout: 'current prompt text',
+      stderr: '',
+      code: 0,
+      timedOut: false,
+    });
+
+    await expect(peekInputRegion(3, 2)).resolves.toBe('current prompt text');
+    const script = runOsascript.mock.calls[0][0] as string;
+    expect(script).toContain('tell session of (tab 2 of window 3)');
+    expect(script).toContain('last paragraph of c');
   });
 });

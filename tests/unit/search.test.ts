@@ -45,6 +45,19 @@ describe('searchTab', () => {
     expect(r.searchedLineCount).toBe(2);
   });
 
+  it('empty substring pattern matches every searched line', async () => {
+    runOsascript.mockResolvedValueOnce(ok('alpha\nbeta\n'));
+
+    const r = await searchTab({ window: 1, tab: 1, pattern: '' });
+
+    expect(r.matches).toEqual([
+      { lineNumber: 1, text: 'alpha' },
+      { lineNumber: 2, text: 'beta' },
+    ]);
+    expect(r.lineCount).toBe(2);
+    expect(r.searchedLineCount).toBe(2);
+  });
+
   it('bounds searching to tailLines while preserving source line numbers', async () => {
     runOsascript.mockResolvedValueOnce(ok('needle old\nkeep\nneedle recent\nlast\n'));
 
